@@ -3,218 +3,260 @@
 <head>
 <meta charset="UTF-8">
 <title>⭐ Cute Star Dash ⭐</title>
+
 <style>
-  body {
-    margin: 0;
-    background: linear-gradient(#ffe6f0, #e6f7ff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-family: "Arial", sans-serif;
-    font-weight: bold;
-  }
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #ffe6ff, #d0f0ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  overflow: hidden;
+}
 
-  canvas {
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  }
+canvas {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+}
 
-  .hint {
-    position: fixed;
-    bottom: 60px;
-    font-size: 14px;
-    opacity: 0.8;
-    text-align: center;
-    width: 100%;
-    font-weight: bold;
-  }
+/* UI */
+.banner {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #ff4fd8;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
 
-  .credits {
-    position: fixed;
-    bottom: 35px;
-    font-size: 12px;
-    opacity: 0.7;
-    text-align: center;
-    width: 100%;
-    font-weight: bold;
-  }
+.inventory {
+  position: fixed;
+  top: 50px;
+  left: 10px;
+  background: rgba(255,255,255,0.9);
+  padding: 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
 
-  .leaderboard {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(255,255,255,0.9);
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: left;
-  }
+.credits {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Start screen */
+.startScreen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(#ffccff, #ccf2ff);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.startScreen input {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.startScreen button {
+  padding: 10px 25px;
+  font-size: 16px;
+  border-radius: 15px;
+  border: none;
+  background: #6bcfff;
+  color: white;
+}
+
+/* Mobile controls */
+.controls {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  display: grid;
+  grid-template-columns: 50px 50px 50px;
+  gap: 6px;
+}
+
+.controls button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: #6bcfff;
+  color: white;
+  font-size: 20px;
+}
 </style>
 </head>
+
 <body>
 
+<div class="banner">🆕 NEW UPDATE!</div>
+<div class="inventory" id="inventory">🎒 Inventory:<br>None</div>
+
+<div class="startScreen" id="startScreen">
+  <h2>⭐ Cute Star Dash ⭐</h2>
+  <input id="playerNameInput" placeholder="Enter your name">
+  <button onclick="startGame()">START GAME</button>
+</div>
+
 <canvas id="game" width="480" height="480"></canvas>
-<div class="hint">Move with ⬅️⬆️⬇️➡️ | Collect ⭐ | Avoid 😈</div>
+
+<div class="controls">
+  <div></div>
+  <button ontouchstart="keys.ArrowUp=true" ontouchend="keys.ArrowUp=false">⬆️</button>
+  <div></div>
+  <button ontouchstart="keys.ArrowLeft=true" ontouchend="keys.ArrowLeft=false">⬅️</button>
+  <button ontouchstart="keys.ArrowDown=true" ontouchend="keys.ArrowDown=false">⬇️</button>
+  <button ontouchstart="keys.ArrowRight=true" ontouchend="keys.ArrowRight=false">➡️</button>
+</div>
+
 <div class="credits">Made by Joshua | Instagram: @jshctz.mp3</div>
-<div class="leaderboard" id="leaderboard"></div>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-const leaderboardDiv = document.getElementById("leaderboard");
+const inventoryDiv = document.getElementById("inventory");
+
+let keys = {};
+let gameStarted = false;
+let playerName = "";
 
 let player = { x: 240, y: 240, r: 14, speed: 4, color: "#6bcfff" };
 let stars = [];
 let enemies = [];
-let balls = []; // collected balls
 let score = 0;
 let level = 1;
-let keys = {};
 let nextBallScore = 10;
-let ballColors = ["#ff69b4", "#6a5acd", "#ff8c00", "#00fa9a", "#ff1493", "#1e90ff", "#ffa500", "#00ffff", "#adff2f", "#ff4500"];
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+
+let balls = [];
+let ballColors = ["#ff69b4","#8a2be2","#00fa9a","#ffa500","#1e90ff","#ff1493"];
 
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
-function spawnStar() {
-  stars.push({
-    x: Math.random() * 440 + 20,
-    y: Math.random() * 440 + 20,
-    r: 8
-  });
+function startGame() {
+  const input = document.getElementById("playerNameInput").value.trim();
+  if (!input) return alert("Enter a name!");
+  playerName = input;
+  document.getElementById("startScreen").style.display = "none";
+  gameStarted = true;
 }
 
+function spawnStar() {
+  stars.push({ x: Math.random()*440+20, y: Math.random()*440+20, r: 8 });
+}
 function spawnEnemy() {
   enemies.push({
-    x: Math.random() * 440 + 20,
-    y: Math.random() * 440 + 20,
+    x: Math.random()*440+20,
+    y: Math.random()*440+20,
     r: 14,
-    vx: (Math.random() - 0.5) * (1 + level * 0.3),
-    vy: (Math.random() - 0.5) * (1 + level * 0.3)
+    vx:(Math.random()-0.5)*(1+level*0.3),
+    vy:(Math.random()-0.5)*(1+level*0.3)
   });
 }
 
 spawnStar();
 spawnEnemy();
 
-function distance(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
 
 function update() {
-  if (keys["ArrowUp"]) player.y -= player.speed;
-  if (keys["ArrowDown"]) player.y += player.speed;
-  if (keys["ArrowLeft"]) player.x -= player.speed;
-  if (keys["ArrowRight"]) player.x += player.speed;
+  if (!gameStarted) return;
 
-  player.x = Math.max(player.r, Math.min(480 - player.r, player.x));
-  player.y = Math.max(player.r, Math.min(480 - player.r, player.y));
+  if (keys.ArrowUp) player.y -= player.speed;
+  if (keys.ArrowDown) player.y += player.speed;
+  if (keys.ArrowLeft) player.x -= player.speed;
+  if (keys.ArrowRight) player.x += player.speed;
 
-  // collect stars
-  stars.forEach((s, i) => {
-    if (distance(player, s) < player.r + s.r) {
-      stars.splice(i, 1);
+  player.x = Math.max(player.r, Math.min(480-player.r, player.x));
+  player.y = Math.max(player.r, Math.min(480-player.r, player.y));
+
+  stars.forEach((s,i)=>{
+    if (dist(player,s) < player.r+s.r){
+      stars.splice(i,1);
       score++;
       spawnStar();
 
-      // increase level every 5 points
-      if (score % 5 === 0) {
-        level++;
-        spawnEnemy();
-      }
+      if (score % 5 === 0){ level++; spawnEnemy(); }
 
-      // collect new ball every 10 points
-      if (score >= nextBallScore && nextBallScore <= 100) {
-        let colorIndex = Math.floor(nextBallScore / 10) - 1;
-        let newBall = { color: ballColors[colorIndex % ballColors.length] };
-        balls.push(newBall);
-        player.color = newBall.color; // equip new ball
-        alert(`🎉 You unlocked a new ball! Color: ${newBall.color}`);
+      if (score >= nextBallScore){
+        let c = ballColors[(balls.length)%ballColors.length];
+        balls.push(c);
+        player.color = c;
         nextBallScore += 10;
-      }
-
-      // leaderboard at 100 points
-      if (score >= 100) {
-        let name = prompt("🏆 You reached 100! Enter your name for the leaderboard:");
-        if (name) {
-          leaderboard.push({ name: name, score: score });
-          localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-        }
+        inventoryDiv.innerHTML = "🎒 Inventory:<br>" + balls.map(b=>`<span style="color:${b}">●</span>`).join(" ");
       }
     }
   });
 
-  // enemies
-  enemies.forEach(e => {
-    e.x += e.vx;
-    e.y += e.vy;
-
-    if (e.x < e.r || e.x > 480 - e.r) e.vx *= -1;
-    if (e.y < e.r || e.y > 480 - e.r) e.vy *= -1;
-
-    if (distance(player, e) < player.r + e.r) {
-      alert("💀 Game Over!\nScore: " + score);
+  enemies.forEach(e=>{
+    e.x+=e.vx; e.y+=e.vy;
+    if (e.x<e.r||e.x>480-e.r) e.vx*=-1;
+    if (e.y<e.r||e.y>480-e.r) e.vy*=-1;
+    if (dist(player,e) < player.r+e.r){
+      alert(`💀 Game Over!\n${playerName} scored ${score}`);
       location.reload();
     }
   });
 }
 
-function drawCircle(x, y, r, color) {
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = color;
-  ctx.fill();
-}
+function draw(){
+  ctx.clearRect(0,0,480,480);
 
-function draw() {
-  ctx.clearRect(0, 0, 480, 480);
-
-  // stars
-  stars.forEach(s => drawCircle(s.x, s.y, s.r, "#ffd700"));
-
-  // enemies
-  enemies.forEach(e => drawCircle(e.x, e.y, e.r, "#ff6b6b"));
-
-  // player with equipped ball color
-  drawCircle(player.x, player.y, player.r, player.color);
-
-  ctx.fillStyle = "#444";
-  ctx.font = "bold 16px Arial";
-  ctx.fillText("⭐ Score: " + score, 15, 25);
-  ctx.fillText("🌸 Level: " + level, 370, 25);
-
-  // display leaderboard in canvas (optional)
-  let lbY = 50;
-  ctx.fillStyle = "#000";
-  ctx.font = "bold 12px Arial";
-  leaderboard.forEach(entry => {
-    ctx.fillText(`${entry.name}: ${entry.score}`, 350, lbY);
-    lbY += 15;
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle="#ffd700";
+    ctx.shadowBlur=10;
+    ctx.shadowColor="#ffd700";
+    ctx.fill();
+    ctx.shadowBlur=0;
   });
+
+  enemies.forEach(e=>{
+    ctx.beginPath();
+    ctx.arc(e.x,e.y,e.r,0,Math.PI*2);
+    ctx.fillStyle="#ff6b6b";
+    ctx.fill();
+  });
+
+  ctx.beginPath();
+  ctx.arc(player.x,player.y,player.r,0,Math.PI*2);
+  ctx.fillStyle=player.color;
+  ctx.shadowBlur=15;
+  ctx.shadowColor=player.color;
+  ctx.fill();
+  ctx.shadowBlur=0;
+
+  ctx.fillStyle="#333";
+  ctx.font="bold 16px Arial";
+  ctx.fillText("⭐ "+score,10,25);
 }
 
-function updateLeaderboardDiv() {
-  if (leaderboard.length === 0) return;
-  leaderboardDiv.innerHTML = "<b>Leaderboard</b><br>" + leaderboard
-    .sort((a,b) => b.score - a.score)
-    .map(e => `${e.name}: ${e.score}`)
-    .join("<br>");
-}
-
-function loop() {
+function loop(){
   update();
   draw();
-  updateLeaderboardDiv();
   requestAnimationFrame(loop);
 }
-
 loop();
 </script>
 
 </body>
 </html>
-
