@@ -7,11 +7,7 @@
 <style>
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #ffe6ff, #d0f0ff);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background: radial-gradient(circle at top, #ffd6ff, #ccefff);
   font-family: Arial, sans-serif;
   font-weight: bold;
   overflow: hidden;
@@ -20,7 +16,10 @@ body {
 canvas {
   background: white;
   border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+  display: block;
+  margin: auto;
+  margin-top: 60px;
 }
 
 /* UI */
@@ -30,28 +29,55 @@ canvas {
   left: 10px;
   background: #ff4fd8;
   color: white;
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 6px 14px;
+  border-radius: 14px;
   font-size: 12px;
 }
 
+.topUI {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.topUI button {
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: none;
+  background: #6bcfff;
+  color: white;
+  font-weight: bold;
+}
+
+/* Inventory */
 .inventory {
   position: fixed;
-  top: 50px;
-  left: 10px;
-  background: rgba(255,255,255,0.9);
-  padding: 8px;
-  border-radius: 12px;
-  font-size: 12px;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
 }
 
-.credits {
-  position: fixed;
-  bottom: 10px;
-  width: 100%;
+.inventoryBox {
+  background: white;
+  width: 300px;
+  border-radius: 20px;
+  padding: 15px;
   text-align: center;
-  font-size: 12px;
-  opacity: 0.7;
+}
+
+.ball {
+  font-size: 22px;
+  margin: 4px;
+}
+
+.perkBtn {
+  margin: 5px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: none;
+  background: #ffb347;
 }
 
 /* Start screen */
@@ -66,27 +92,17 @@ canvas {
   z-index: 10;
 }
 
-.startScreen input {
+.startScreen input, .startScreen button {
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 14px;
   border: none;
-  font-size: 16px;
-  margin-bottom: 10px;
+  margin: 6px;
 }
 
-.startScreen button {
-  padding: 10px 25px;
-  font-size: 16px;
-  border-radius: 15px;
-  border: none;
-  background: #6bcfff;
-  color: white;
-}
-
-/* Mobile controls */
+/* D-pad */
 .controls {
   position: fixed;
-  bottom: 70px;
+  bottom: 20px;
   right: 20px;
   display: grid;
   grid-template-columns: 50px 50px 50px;
@@ -99,7 +115,6 @@ canvas {
   border-radius: 50%;
   border: none;
   background: #6bcfff;
-  color: white;
   font-size: 20px;
 }
 </style>
@@ -108,111 +123,109 @@ canvas {
 <body>
 
 <div class="banner">🆕 NEW UPDATE!</div>
-<div class="inventory" id="inventory">🎒 Inventory:<br>None</div>
+
+<div class="topUI">
+  <button onclick="toggleInventory()">🎒 INVENTORY</button>
+</div>
 
 <div class="startScreen" id="startScreen">
   <h2>⭐ Cute Star Dash ⭐</h2>
-  <input id="playerNameInput" placeholder="Enter your name">
-  <button onclick="startGame()">START GAME</button>
+  <input id="nameInput" placeholder="Enter name">
+  <button onclick="startGame()">START</button>
 </div>
 
 <canvas id="game" width="480" height="480"></canvas>
 
 <div class="controls">
   <div></div>
-  <button ontouchstart="keys.ArrowUp=true" ontouchend="keys.ArrowUp=false">⬆️</button>
+  <button onpointerdown="keys.up=true" onpointerup="keys.up=false">⬆️</button>
   <div></div>
-  <button ontouchstart="keys.ArrowLeft=true" ontouchend="keys.ArrowLeft=false">⬅️</button>
-  <button ontouchstart="keys.ArrowDown=true" ontouchend="keys.ArrowDown=false">⬇️</button>
-  <button ontouchstart="keys.ArrowRight=true" ontouchend="keys.ArrowRight=false">➡️</button>
+  <button onpointerdown="keys.left=true" onpointerup="keys.left=false">⬅️</button>
+  <button onpointerdown="keys.down=true" onpointerup="keys.down=false">⬇️</button>
+  <button onpointerdown="keys.right=true" onpointerup="keys.right=false">➡️</button>
 </div>
 
-<div class="credits">Made by Joshua | Instagram: @jshctz.mp3</div>
+<div class="inventory" id="inventory">
+  <div class="inventoryBox">
+    <h3>🎒 Inventory</h3>
+    <p id="coins"></p>
+    <div id="balls"></div>
+    <h4>Perks</h4>
+    <button class="perkBtn" onclick="killEnemy()">💥 Kill Enemy (20)</button>
+    <button class="perkBtn" onclick="speedBoost()">⚡ Speed (15)</button>
+    <button class="perkBtn" onclick="shield()">🛡 Shield (25)</button>
+    <br><br>
+    <button onclick="toggleInventory()">Close</button>
+  </div>
+</div>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-const inventoryDiv = document.getElementById("inventory");
 
-let keys = {};
-let gameStarted = false;
-let playerName = "";
+let keys = {up:false,down:false,left:false,right:false};
+let name="", started=false;
 
-let player = { x: 240, y: 240, r: 14, speed: 4, color: "#6bcfff" };
-let stars = [];
-let enemies = [];
-let score = 0;
-let level = 1;
-let nextBallScore = 10;
+let player = {x:240,y:240,r:14,speed:4,color:"#6bcfff",shield:false};
+let stars=[], enemies=[];
+let score=0, level=1, nextBall=10;
 
-let balls = [];
-let ballColors = ["#ff69b4","#8a2be2","#00fa9a","#ffa500","#1e90ff","#ff1493"];
+let balls = JSON.parse(localStorage.getItem("balls")||"[]");
+let coins = score;
 
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+const colors = ["#ff69b4","#8a2be2","#00fa9a","#ffa500","#1e90ff"];
+const galaxy = "🌌";
 
-function startGame() {
-  const input = document.getElementById("playerNameInput").value.trim();
-  if (!input) return alert("Enter a name!");
-  playerName = input;
-  document.getElementById("startScreen").style.display = "none";
-  gameStarted = true;
+function startGame(){
+  name = document.getElementById("nameInput").value.trim();
+  if(!name) return alert("Enter name");
+  document.getElementById("startScreen").style.display="none";
+  started=true;
 }
 
-function spawnStar() {
-  stars.push({ x: Math.random()*440+20, y: Math.random()*440+20, r: 8 });
-}
-function spawnEnemy() {
-  enemies.push({
-    x: Math.random()*440+20,
-    y: Math.random()*440+20,
-    r: 14,
-    vx:(Math.random()-0.5)*(1+level*0.3),
-    vy:(Math.random()-0.5)*(1+level*0.3)
-  });
+function toggleInventory(){
+  const inv=document.getElementById("inventory");
+  inv.style.display = inv.style.display==="flex"?"none":"flex";
+  renderInventory();
 }
 
-spawnStar();
-spawnEnemy();
+function spawnStar(){stars.push({x:Math.random()*440+20,y:Math.random()*440+20,r:8});}
+function spawnEnemy(){enemies.push({x:Math.random()*440+20,y:Math.random()*440+20,r:14,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2});}
 
-function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+spawnStar(); spawnEnemy();
 
-function update() {
-  if (!gameStarted) return;
+function update(){
+  if(!started) return;
 
-  if (keys.ArrowUp) player.y -= player.speed;
-  if (keys.ArrowDown) player.y += player.speed;
-  if (keys.ArrowLeft) player.x -= player.speed;
-  if (keys.ArrowRight) player.x += player.speed;
+  if(keys.up) player.y-=player.speed;
+  if(keys.down) player.y+=player.speed;
+  if(keys.left) player.x-=player.speed;
+  if(keys.right) player.x+=player.speed;
 
-  player.x = Math.max(player.r, Math.min(480-player.r, player.x));
-  player.y = Math.max(player.r, Math.min(480-player.r, player.y));
+  player.x=Math.max(player.r,Math.min(480-player.r,player.x));
+  player.y=Math.max(player.r,Math.min(480-player.r,player.y));
 
   stars.forEach((s,i)=>{
-    if (dist(player,s) < player.r+s.r){
+    if(Math.hypot(player.x-s.x,player.y-s.y)<player.r+s.r){
       stars.splice(i,1);
-      score++;
+      score++; coins=score;
       spawnStar();
 
-      if (score % 5 === 0){ level++; spawnEnemy(); }
-
-      if (score >= nextBallScore){
-        let c = ballColors[(balls.length)%ballColors.length];
-        balls.push(c);
-        player.color = c;
-        nextBallScore += 10;
-        inventoryDiv.innerHTML = "🎒 Inventory:<br>" + balls.map(b=>`<span style="color:${b}">●</span>`).join(" ");
+      if(score>=nextBall){
+        if(score===100){balls.push(galaxy);}
+        else balls.push(colors[balls.length%colors.length]);
+        player.color=balls.at(-1);
+        localStorage.setItem("balls",JSON.stringify(balls));
+        nextBall+=10;
       }
     }
   });
 
-  enemies.forEach(e=>{
+  enemies.forEach((e,i)=>{
     e.x+=e.vx; e.y+=e.vy;
-    if (e.x<e.r||e.x>480-e.r) e.vx*=-1;
-    if (e.y<e.r||e.y>480-e.r) e.vy*=-1;
-    if (dist(player,e) < player.r+e.r){
-      alert(`💀 Game Over!\n${playerName} scored ${score}`);
-      location.reload();
+    if(Math.hypot(player.x-e.x,player.y-e.y)<player.r+e.r){
+      if(player.shield){player.shield=false; enemies.splice(i,1);}
+      else alert("💀 Game Over\n"+name+" scored "+score), location.reload();
     }
   });
 }
@@ -220,42 +233,27 @@ function update() {
 function draw(){
   ctx.clearRect(0,0,480,480);
 
-  stars.forEach(s=>{
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle="#ffd700";
-    ctx.shadowBlur=10;
-    ctx.shadowColor="#ffd700";
-    ctx.fill();
-    ctx.shadowBlur=0;
-  });
-
-  enemies.forEach(e=>{
-    ctx.beginPath();
-    ctx.arc(e.x,e.y,e.r,0,Math.PI*2);
-    ctx.fillStyle="#ff6b6b";
-    ctx.fill();
-  });
-
-  ctx.beginPath();
-  ctx.arc(player.x,player.y,player.r,0,Math.PI*2);
-  ctx.fillStyle=player.color;
-  ctx.shadowBlur=15;
-  ctx.shadowColor=player.color;
-  ctx.fill();
-  ctx.shadowBlur=0;
+  stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fillStyle="#ffd700";ctx.fill();});
+  enemies.forEach(e=>{ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,7);ctx.fillStyle="red";ctx.fill();});
+  ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,7);
+  ctx.fillStyle=player.color; ctx.fill();
 
   ctx.fillStyle="#333";
-  ctx.font="bold 16px Arial";
-  ctx.fillText("⭐ "+score,10,25);
+  ctx.fillText("⭐ "+score,10,20);
 }
 
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
+function loop(){update();draw();requestAnimationFrame(loop);}
 loop();
+
+/* PERKS */
+function killEnemy(){ if(coins>=20&&enemies.length){coins-=20; enemies.pop();}}
+function speedBoost(){ if(coins>=15){coins-=15; player.speed=6; setTimeout(()=>player.speed=4,3000);}}
+function shield(){ if(coins>=25){coins-=25; player.shield=true;}}
+
+function renderInventory(){
+  document.getElementById("coins").textContent="Coins: "+coins;
+  document.getElementById("balls").innerHTML=balls.map(b=>`<span class="ball">${b==="🌌"?b:"●"}</span>`).join("");
+}
 </script>
 
 </body>
