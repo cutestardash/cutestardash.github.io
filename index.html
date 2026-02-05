@@ -2,148 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>⭐ Cute Star Dash ⭐</title>
-
+<title> Cute Star Dash </title>
 <style>
 body {
-  margin: 0;
+  margin:0;
+  font-family: Arial,sans-serif;
+  font-weight:bold;
+  overflow:hidden;
   background: radial-gradient(circle at top, #ffd6ff, #ccefff);
-  font-family: Arial, sans-serif;
-  font-weight: bold;
-  overflow: hidden;
+  touch-action:none;
 }
-
 canvas {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-  display: block;
-  margin: auto;
-  margin-top: 60px;
+  display:block;
+  margin:auto;
+  margin-top:60px;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 25px 50px rgba(0,0,0,0.3);
 }
-
-/* UI */
 .banner {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  background: #ff4fd8;
-  color: white;
-  padding: 6px 14px;
-  border-radius: 14px;
-  font-size: 12px;
+  position:fixed;
+  top:10px;
+  left:10px;
+  background:#ff4fd8;
+  color:white;
+  padding:10px 20px;
+  border-radius:20px;
+  font-size:20px;
+  font-weight:bold;
+  text-align:center;
 }
-
 .topUI {
-  position: fixed;
-  top: 10px;
-  right: 10px;
+  position:fixed;
+  top:10px;
+  right:10px;
 }
-
 .topUI button {
-  padding: 8px 14px;
-  border-radius: 14px;
-  border: none;
-  background: #6bcfff;
-  color: white;
-  font-weight: bold;
+  padding:8px 14px;
+  border-radius:14px;
+  border:none;
+  background:#6bcfff;
+  color:white;
+  font-weight:bold;
+  margin-left:5px;
 }
-
-/* Inventory */
-.inventory {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  justify-content: center;
-  align-items: center;
-}
-
-.inventoryBox {
-  background: white;
-  width: 300px;
-  border-radius: 20px;
-  padding: 15px;
-  text-align: center;
-}
-
-.ball {
-  font-size: 22px;
-  margin: 4px;
-}
-
-.perkBtn {
-  margin: 5px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  border: none;
-  background: #ffb347;
-}
-
-/* Start screen */
 .startScreen {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(#ffccff, #ccf2ff);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
+  position:fixed;
+  inset:0;
+  background:linear-gradient(#ffccff,#ccf2ff);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
 }
-
 .startScreen input, .startScreen button {
-  padding: 10px;
-  border-radius: 14px;
-  border: none;
-  margin: 6px;
-  font-weight: bold;
-  font-size: 16px;
+  padding:10px;
+  border-radius:14px;
+  border:none;
+  margin:6px;
+  font-weight:bold;
+  font-size:16px;
 }
-
-/* D-pad */
 .controls {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  display: grid;
-  grid-template-columns: 50px 50px 50px;
-  gap: 6px;
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  display:grid;
+  grid-template-columns:50px 50px 50px;
+  gap:6px;
 }
-
 .controls button {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: none;
-  background: #6bcfff;
-  font-size: 20px;
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  border:none;
+  background:#6bcfff;
+  font-size:20px;
 }
-
-/* Credits standout */
+.inventory, #subscriptions, #leaderboard {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.inventoryBox {
+  background:white;
+  width:340px;
+  border-radius:20px;
+  padding:15px;
+  text-align:center;
+}
+.ball {font-size:22px;margin:4px;}
+.perkBtn {margin:5px;padding:6px 10px;border-radius:12px;border:none;background:#ffb347;}
 .credits {
-  position: fixed;
-  bottom: 10px;
-  width: 100%;
-  text-align: center;
-  font-size: 18px;
-  font-weight: bolder;
-  color: #ff1493;
-  text-shadow: 2px 2px #ffffff;
+  position:fixed;
+  bottom:10px;
+  width:100%;
+  text-align:center;
+  font-size:18px;
+  font-weight:bolder;
+  color:#ff1493;
+  text-shadow:2px 2px #fff;
 }
 </style>
 </head>
-
 <body>
-
-<div class="banner">🆕 NEW UPDATE!</div>
-
+<div class="banner">🆕 NEW UPDATE!!!</div>
 <div class="topUI">
   <button onclick="toggleInventory()">🎒 INVENTORY</button>
+  <button onclick="toggleSubscriptions()">💳 SUBSCRIPTIONS</button>
+  <button onclick="toggleLeaderboard()">🏆 LEADERBOARD</button>
 </div>
 
 <div class="startScreen" id="startScreen">
-  <h2>⭐ Cute Star Dash ⭐</h2>
+  <h2>⭐ Cute Star Dash Mega ⭐</h2>
   <input id="nameInput" placeholder="Enter name">
   <button onclick="startGame()">START</button>
 </div>
@@ -159,6 +134,7 @@ canvas {
   <button onpointerdown="keys.right=true" onpointerup="keys.right=false">➡️</button>
 </div>
 
+<!-- Inventory -->
 <div class="inventory" id="inventory">
   <div class="inventoryBox">
     <h3>🎒 Inventory</h3>
@@ -166,53 +142,87 @@ canvas {
     <div id="balls"></div>
     <h4>Perks</h4>
     <button class="perkBtn" onclick="killEnemy()">💥 Kill Enemy (20)</button>
-    <button class="perkBtn" onclick="speedBoost()">⚡ Speed (15)</button>
+    <button class="perkBtn" onclick="speedBoost()">⚡ Speed Boost (15)</button>
     <button class="perkBtn" onclick="shield()">🛡 Shield (25)</button>
+    <button class="perkBtn" onclick="extraPoints()">🌟 Extra Points (10)</button>
+    <button class="perkBtn" onclick="customColor()">🎨 Custom Ball (30)</button>
     <br><br>
     <button onclick="toggleInventory()">Close</button>
   </div>
 </div>
 
+<!-- Subscriptions -->
+<div class="inventory" id="subscriptions">
+  <div class="inventoryBox">
+    <h3>💳 Subscriptions</h3>
+    <p>Dash Bucks: <span id="dashBucksSub">0</span></p>
+    <ul style="text-align:left;">
+      <li>🎵 Music Pass – 50 Dash Bucks</li>
+      <li>✨ Galaxy Ball Pass – 100 Dash Bucks</li>
+      <li>⚡ Perks Bundle – 75 Dash Bucks</li>
+      <li>🏆 Ultimate Dash Pass – 200 Dash Bucks</li>
+    </ul>
+    <button onclick="toggleSubscriptions()">Close</button>
+  </div>
+</div>
+
+<!-- Leaderboard -->
+<div class="inventory" id="leaderboard">
+  <div class="inventoryBox">
+    <h3>🏆 Leaderboard</h3>
+    <div id="leaderboardList"></div>
+    <button onclick="toggleLeaderboard()">Close</button>
+  </div>
+</div>
+
 <div class="credits">Created by Joshua | IG: @jshctz.mp3</div>
 
+<audio id="bgMusic" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+
 <script>
+// --------------------
+// VARIABLES
+// --------------------
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
 let keys = {up:false,down:false,left:false,right:false};
 let name="", started=false;
 
-let player = {x:240,y:240,r:14,speed:4,color:"#6bcfff",shield:false};
-let stars=[], enemies=[];
-let score=0, level=1, nextBall=10;
+let player={x:240,y:240,r:14,speed:4,color:"#6bcfff",shield:false};
+let stars=[],enemies=[];
+let score=0,level=1,nextBall=10;
+let balls=JSON.parse(localStorage.getItem("balls")||"[]");
+let dashBucks=parseInt(localStorage.getItem("dashBucks")||"0");
+let musicPass=localStorage.getItem("musicPass")=="true";
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")||"[]");
+const colors=["#ff69b4","#8a2be2","#00fa9a","#ffa500","#1e90ff"];
+const galaxy="🌌";
 
-let balls = JSON.parse(localStorage.getItem("balls")||"[]");
-let coins = score;
-
-const colors = ["#ff69b4","#8a2be2","#00fa9a","#ffa500","#1e90ff"];
-const galaxy = "🌌";
-
+// --------------------
+// START GAME
+// --------------------
 function startGame(){
-  name = document.getElementById("nameInput").value.trim();
+  name=document.getElementById("nameInput").value.trim();
   if(!name) return alert("Enter name");
   document.getElementById("startScreen").style.display="none";
   started=true;
+  document.getElementById("bgMusic").play();
 }
 
-function toggleInventory(){
-  const inv=document.getElementById("inventory");
-  inv.style.display = inv.style.display==="flex"?"none":"flex";
-  renderInventory();
-}
-
+// --------------------
+// SPAWN STARS & ENEMIES
+// --------------------
 function spawnStar(){stars.push({x:Math.random()*440+20,y:Math.random()*440+20,r:8});}
 function spawnEnemy(){enemies.push({x:Math.random()*440+20,y:Math.random()*440+20,r:14,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2});}
-
 spawnStar(); spawnEnemy();
 
+// --------------------
+// GAME LOOP
+// --------------------
 function update(){
   if(!started) return;
-
   if(keys.up) player.y-=player.speed;
   if(keys.down) player.y+=player.speed;
   if(keys.left) player.x-=player.speed;
@@ -221,14 +231,14 @@ function update(){
   player.x=Math.max(player.r,Math.min(480-player.r,player.x));
   player.y=Math.max(player.r,Math.min(480-player.r,player.y));
 
+  // Collect stars
   stars.forEach((s,i)=>{
     if(Math.hypot(player.x-s.x,player.y-s.y)<player.r+s.r){
       stars.splice(i,1);
-      score++; coins=score;
+      score++; dashBucks++;
       spawnStar();
-
       if(score>=nextBall){
-        if(score===100){balls.push(galaxy);}
+        if(score>=100){balls.push(galaxy);}
         else balls.push(colors[balls.length%colors.length]);
         player.color=balls.at(-1);
         localStorage.setItem("balls",JSON.stringify(balls));
@@ -237,41 +247,72 @@ function update(){
     }
   });
 
+  // Enemy collision
   enemies.forEach((e,i)=>{
     e.x+=e.vx; e.y+=e.vy;
+    if(e.x<14||e.x>466) e.vx*=-1;
+    if(e.y<14||e.y>466) e.vy*=-1;
     if(Math.hypot(player.x-e.x,player.y-e.y)<player.r+e.r){
       if(player.shield){player.shield=false; enemies.splice(i,1);}
-      else alert("💀 Game Over\n"+name+" scored "+score), location.reload();
+      else gameOver();
     }
   });
+  localStorage.setItem("dashBucks",dashBucks);
 }
 
 function draw(){
   ctx.clearRect(0,0,480,480);
-
   stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fillStyle="#ffd700";ctx.fill();});
   enemies.forEach(e=>{ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,7);ctx.fillStyle="red";ctx.fill();});
-  ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,7);
+  ctx.beginPath(); ctx.arc(player.x,player.y,player.r,0,7);
+  if(player.color===galaxy){ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.shadowBlur=20; ctx.shadowColor="#ff0"; ctx.stroke();}
   ctx.fillStyle=player.color; ctx.fill();
-
-  ctx.fillStyle="#333";
-  ctx.font="bold 16px Arial";
+  ctx.fillStyle="#333"; ctx.font="bold 16px Arial";
   ctx.fillText("⭐ "+score,10,20);
+  ctx.fillText("💰 "+dashBucks,10,40);
 }
-
-function loop(){update();draw();requestAnimationFrame(loop);}
+function loop(){update(); draw(); requestAnimationFrame(loop);}
 loop();
 
-/* PERKS */
-function killEnemy(){ if(coins>=20&&enemies.length){coins-=20; enemies.pop();}}
-function speedBoost(){ if(coins>=15){coins-=15; player.speed=6; setTimeout(()=>player.speed=4,3000);}}
-function shield(){ if(coins>=25){coins-=25; player.shield=true;}}
+// --------------------
+// PERKS
+// --------------------
+function killEnemy(){if(dashBucks>=20&&enemies.length){dashBucks-=20;enemies.pop();updateDash();}}
+function speedBoost(){if(dashBucks>=15){dashBucks-=15;player.speed=6;setTimeout(()=>player.speed=4,3000);updateDash();}}
+function shield(){if(dashBucks>=25){dashBucks-=25;player.shield=true;updateDash();}}
+function extraPoints(){if(dashBucks>=10){dashBucks-=10;score+=5;updateDash();}}
+function customColor(){if(dashBucks>=30){dashBucks-=30;player.color=colors[Math.floor(Math.random()*colors.length)];updateDash();}}
+function updateDash(){document.getElementById("coins").textContent="Dash Bucks: "+dashBucks;document.getElementById("dashBucksSub").textContent=dashBucks; localStorage.setItem("dashBucks",dashBucks);}
 
-function renderInventory(){
-  document.getElementById("coins").textContent="Coins: "+coins;
-  document.getElementById("balls").innerHTML=balls.map(b=>`<span class="ball">${b==="🌌"?b:"●"}</span>`).join("");
+// --------------------
+// INVENTORY & SUBS
+// --------------------
+function toggleInventory(){const inv=document.getElementById("inventory");inv.style.display=inv.style.display==="flex"?"none":"flex"; renderInventory();}
+function toggleSubscriptions(){const sub=document.getElementById("subscriptions");sub.style.display=sub.style.display==="flex"?"none":"flex"; renderSubscriptions();}
+function toggleLeaderboard(){const lb=document.getElementById("leaderboard");lb.style.display=lb.style.display==="flex"?"none":"flex"; renderLeaderboard();}
+
+// --------------------
+// RENDER FUNCTIONS
+// --------------------
+function renderInventory(){document.getElementById("coins").textContent="Dash Bucks: "+dashBucks; document.getElementById("balls").innerHTML=balls.map(b=>`<span class="ball">${b==="🌌"?b:"●"}</span>`).join("");}
+function renderSubscriptions(){document.getElementById("dashBucksSub").textContent=dashBucks;}
+function renderLeaderboard(){let html=""; leaderboard.slice(-10).reverse().forEach((p,i)=>{html+=`${i+1}. ${p.name} - ${p.score}<br>`}); document.getElementById("leaderboardList").innerHTML=html;}
+
+// --------------------
+// GAME OVER
+// --------------------
+function gameOver(){
+  alert(`💀 Game Over!\n${name} scored ${score}`);
+  if(score>=100){let playerScore={name:name,score:score}; leaderboard.push(playerScore); localStorage.setItem("leaderboard",JSON.stringify(leaderboard));}
+  localStorage.setItem("dashBucks",dashBucks);
+  location.reload();
 }
-</script>
 
+// --------------------
+// INITIAL SETTINGS
+// --------------------
+document.addEventListener('contextmenu', e=>e.preventDefault());
+document.getElementById("bgMusic").volume=0.3;
+</script>
 </body>
 </html>
